@@ -1,47 +1,36 @@
 [package]
 name = "udoc"
 version = "0.1.0"
-edition = "2021"
-description = "Connection report for URLs: DNS/TCP/TLS/TTFB timings + cert summary + redirects"
+edition = "2024"
+rust-version = "1.92"
+description = "Connection diagnostics for URLs: DNS/TCP/TLS/TTFB timings + HTTP/2 + cert summary + redirects"
 license = "MIT"
-authors = []
+repository = "https://github.com/nerkn/urldoc"
+homepage = "https://github.com/nerkn/urldoc"
+readme = "README.md"
+keywords = ["http", "tls", "dns", "curl", "diagnostics"]
+categories = ["command-line-utilities", "network-programming"]
 
 [[bin]]
 name = "udoc"
 path = "src/main.rs"
 
 [dependencies]
-# Async runtime
 tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "macros"] }
-
-# TLS
 rustls = { version = "0.23", default-features = false, features = ["std", "tls12", "ring"] }
 ring = "0.17"
 webpki-roots = "0.26"
-
-# HTTP
 hyper = { version = "1", features = ["client", "http1", "http2"] }
 hyper-util = { version = "0.1", features = ["tokio", "client-legacy"] }
 http-body-util = "0.1"
 bytes = "1"
-
-# DNS
 hickory-resolver = "0.24"
-
-# URL parsing
 url = "2"
-
-# TLS connector for hyper
 hyper-rustls = { version = "0.27", default-features = false, features = ["http1", "http2", "tls12", "ring", "logging"] }
 tokio-rustls = "0.26"
-
-# Cert parsing
 x509-parser = "0.16"
-
-# Time
 chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
 
 [profile.release]
 lto = true
 strip = true
-
