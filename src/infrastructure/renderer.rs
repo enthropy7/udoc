@@ -1,5 +1,6 @@
 use crate::domain::Report;
 use crate::ports::Renderer;
+use serde::Serialize;
 
 pub struct PrettyRenderer;
 
@@ -109,62 +110,19 @@ impl JsonRenderer {
     pub fn new() -> Self { Self }
 }
 
+#[derive(Serialize)]
+struct JsonReport<'a> {
+    #[serde(flatten)]
+    report: &'a Report,
+    bottleneck: &'static str,
+}
+
 impl Renderer for JsonRenderer {
     fn render(&self, report: &Report) -> String {
-        let mut out = String::from("{\n");
-        out.push_str(&format!("  \"input_url\": {:?},\n", report.input_url));
-        out.push_str(&format!("  \"final_url\": {:?},\n", report.final_url));
-        out.push_str(&format!("  \"host\": {:?},\n", report.host));
-        out.push_str(&format!("  \"ip\": {:?},\n", report.resolved.ip.to_string()));
-        out.push_str(&format!("  \"port\": {},\n", report.resolved.port));
-        out.push_str(&format!("  \"status\": {},\n", report.http.status));
-        out.push_str(&format!("  \"http_version\": {:?},\n", report.http.version));
-        out.push_str(&format!("  \"proto\": {:?},\n", report.http.proto));
-        out.push_str(&format!("  \"redirects\": {},\n", report.redirects.len()));
-        out.push_str(&format!("  \"was_downgrade\": {},\n", report.was_downgrade));
-
-        out.push_str("  \"timings\": {\n");
-        out.push_str(&format!("    \"dns_ms\": {:.2},\n", report.timings.dns_ms));
-        out.push_str(&format!("    \"tcp_ms\": {:.2},\n", report.timings.tcp_ms));
-        if let Some(tls) = report.timings.tls_ms {
-            out.push_str(&format!("    \"tls_ms\": {:.2},\n", tls));
-        }
-        out.push_str(&format!("    \"ttfb_ms\": {:.2},\n", report.timings.ttfb_ms));
-        out.push_str(&format!("    \"total_ms\": {:.2}\n", report.timings.total_ms));
-        out.push_str("  },\n");
-        out.push_str(&format!("  \"bottleneck\": {:?},\n", report.bottleneck()));
-
-        if let Some(ref tls) = report.tls {
-            out.push_str("  \"tls\": {\n");
-            out.push_str(&format!("    \"version\": {:?},\n", tls.version));
-            match &tls.alpn {
-                Some(a) => out.push_str(&format!("    \"alpn\": {:?},\n", a)),
-                None => out.push_str("    \"alpn\": null,\n"),
-            }
-            out.push_str(&format!("    \"cipher\": {:?},\n", tls.cipher));
-            out.push_str(&format!("    \"chain_len\": {},\n", tls.chain_len));
-            out.push_str(&format!("    \"verified\": {}\n", tls.verified));
-            out.push_str("  },\n");
-        }
-
-        if let Some(ref cert) = report.cert {
-            out.push_str("  \"cert\": {\n");
-            match &cert.subject_cn {
-                Some(cn) => out.push_str(&format!("    \"subject_cn\": {:?},\n", cn)),
-                None => out.push_str("    \"subject_cn\": null,\n"),
-            }
-            out.push_str(&format!("    \"issuer\": {:?},\n", cert.issuer));
-            out.push_str(&format!("    \"san\": {:?},\n", cert.san_short));
-            out.push_str(&format!("    \"not_before\": {:?},\n", cert.not_before));
-            out.push_str(&format!("    \"not_after\": {:?},\n", cert.not_after));
-            out.push_str(&format!("    \"days_left\": {},\n", cert.days_left));
-            out.push_str(&format!("    \"sha256\": {:?}\n", cert.sha256_fp));
-            out.push_str("  }\n");
-        } else {
-            out.push_str("  \"cert\": null\n");
-        }
-
-        out.push_str("}\n");
-        out
+        let json_report = JsonReport {
+            report,
+            bottleneck: report.bottleneck(),
+        };
+        serde_json::to_string_pretty(&json_report).unwrap_or_else(|_| "{}".to_string())
     }
 }

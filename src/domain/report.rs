@@ -1,6 +1,7 @@
 use super::{CertSummary, HttpSummary, RedirectHop, ResolvedTarget, TimingBreakdown, TlsSummary};
+use serde::Serialize;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Report {
     pub input_url: String,
     pub final_url: String,

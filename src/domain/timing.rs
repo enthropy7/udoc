@@ -1,4 +1,6 @@
-#[derive(Debug, Clone, Default)]
+use serde::Serialize;
+
+#[derive(Debug, Clone, Default, Serialize)]
 pub struct HopTiming {
     pub dns_ms: f64,
     pub tcp_ms: f64,
@@ -12,7 +14,7 @@ impl HopTiming {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct TimingBreakdown {
     pub dns_ms: f64,
     pub tcp_ms: f64,

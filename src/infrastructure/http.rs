@@ -109,11 +109,22 @@ impl HttpClient for HybridHttpClient {
             }
         }
 
-        let body_bytes = res.into_body().collect().await
-            .map_err(|e| UdocError::http(format!("failed to read h2 body: {}", e)))?
-            .to_bytes();
-
-        let body_preview = body_bytes[..body_bytes.len().min(body_limit)].to_vec();
+        let mut body_preview = Vec::with_capacity(body_limit.min(8192));
+        let mut body = res.into_body();
+        while body_preview.len() < body_limit {
+            match body.frame().await {
+                Some(Ok(frame)) => {
+                    if let Some(chunk) = frame.data_ref() {
+                        let remaining = body_limit - body_preview.len();
+                        let to_copy = chunk.len().min(remaining);
+                        body_preview.extend_from_slice(&chunk[..to_copy]);
+                    }
+                }
+                Some(Err(e)) => return Err(UdocError::http(format!("failed to read h2 body: {}", e))),
+                None => break,
+            }
+        }
+        drop(body);
 
         Ok(HttpResponse {
             summary: HttpSummary::new(status, reason, "h2".to_string(), "HTTPS".to_string()),

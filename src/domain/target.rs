@@ -1,6 +1,7 @@
 use std::net::IpAddr;
+use serde::Serialize;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub enum IpFamily {
     IPv4,
     IPv6,
@@ -15,7 +16,7 @@ impl std::fmt::Display for IpFamily {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct ResolvedTarget {
     pub ip: IpAddr,
     pub port: u16,
