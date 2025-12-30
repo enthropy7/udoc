@@ -1,6 +1,7 @@
+![docs.rs](https://img.shields.io/docsrs/udoc) ![Crates.io Version](https://img.shields.io/crates/v/udoc)
+
 # udoc
 ![Crates.io Version](https://img.shields.io/crates/v/udoc)
-![Static Badge](https://img.shields.io/badge/blazing%20fast-100%25-orange)
 
 > Ultimate connection diagnostics for URLs: DNS/TCP/TLS/TTFB timings + h2 support + cert summary + redirects + bottleneck analysis.
 > urldoc (`udoc`) is a minimal CLI that prints a concise connection report for any HTTP/HTTPS URL.
